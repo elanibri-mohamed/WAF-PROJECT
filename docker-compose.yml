@@ -58,11 +58,11 @@ services:
     networks:
       - internal
       - public
-    # Exposed directly for Phase 1 (unprotected testing)
     ports:
       - "8888:80"
 
   # ── ModSecurity WAF (Nginx) — Phase 2 ─────────────────────────
+    # ── ModSecurity WAF (Nginx) — Phase 2 ─────────────────────────
   waf:
     image: owasp/modsecurity-crs:nginx
     container_name: modsec-waf
@@ -70,29 +70,24 @@ services:
     depends_on:
       - dvwa
     environment:
-      # Backend to protect
       BACKEND: "http://dvwa:80"
-      # ModSecurity enforcement mode: On | DetectionOnly | Off
       MODSEC_RULE_ENGINE: "On"
-      # Paranoia level 1=low FP, 4=max detection (start with 1, tune up)
       PARANOIA: 1
-      # Anomaly scoring thresholds (inbound / outbound)
       ANOMALY_INBOUND: 5
       ANOMALY_OUTBOUND: 4
-      # Listening port inside container
-      PORT: 80
-      # Logging
+      PORT: 8080
       ACCESSLOG: "/var/log/nginx/access.log"
       ERRORLOG: "/var/log/nginx/error.log"
     volumes:
-      # Custom Nginx server block (tuning, exclusions)
+      # Your existing Nginx config (as template)
       - ./phase2-modsecurity/nginx/default.conf:/etc/nginx/templates/conf.d/default.conf.template:ro
-      # Custom ModSecurity rules / exclusions
-      - ./phase2-modsecurity/crs-setup/custom-exclusions.conf:/etc/modsecurity.d/owasp-crs/rules/CUSTOM-exclusions.conf:ro
-      # Persist WAF logs for analysis
+      # Mount custom exclusions to a NEUTRAL location (not auto-included)
+      # Changing from /etc/modsecurity.d/owasp-crs/rules/ to /etc/nginx/
+      - ./phase2-modsecurity/crs-setup/custom-exclusions.conf:/etc/nginx/custom-exclusions.conf:ro
+      # Persist WAF logs
       - waf_logs:/var/log/nginx
     ports:
-      - "8080:80"
+      - "8080:8080"
     networks:
       - public
       - internal
@@ -102,9 +97,7 @@ volumes:
   waf_logs:
 
 networks:
-  # DVWA ↔ DB ↔ WAF communicate here (not reachable from host)
   internal:
     driver: bridge
-  # WAF exposed to host; DVWA port 8888 also on public for Phase 1
   public:
     driver: bridge
