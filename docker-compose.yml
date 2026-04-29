@@ -1,0 +1,110 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────
+#  WAF Project — Phase 1 + Phase 2
+#
+#  Services:
+#    dvwa        → vulnerable target app  (internal only)
+#    db          → MariaDB for DVWA       (internal only)
+#    waf         → ModSecurity + Nginx    (public-facing :8080)
+#
+#  Usage:
+#    Phase 1 (no WAF):  docker compose up dvwa db
+#    Phase 2 (with WAF): docker compose up
+#
+#  Access:
+#    Phase 1 (unprotected): http://localhost:8888
+#    Phase 2 (protected)  : http://localhost:8080
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  # ── MariaDB — DVWA database ──────────────────────────────────
+  db:
+    image: mariadb:10.6
+    container_name: dvwa-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: dvwa
+      MYSQL_DATABASE: dvwa
+      MYSQL_USER: dvwa
+      MYSQL_PASSWORD: dvwa
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "dvwa", "-pdvwa"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── DVWA — vulnerable target ─────────────────────────────────
+  dvwa:
+    image: ghcr.io/digininja/dvwa:latest
+    container_name: dvwa-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_SERVER: db
+      DB_PORT: 3306
+      DB_DATABASE: dvwa
+      DB_USER: dvwa
+      DB_PASSWORD: dvwa
+      RECAPTCHA_PRIV_KEY: ""
+      RECAPTCHA_PUB_KEY: ""
+    networks:
+      - internal
+      - public
+    # Exposed directly for Phase 1 (unprotected testing)
+    ports:
+      - "8888:80"
+
+  # ── ModSecurity WAF (Nginx) — Phase 2 ─────────────────────────
+  waf:
+    image: owasp/modsecurity-crs:nginx
+    container_name: modsec-waf
+    restart: unless-stopped
+    depends_on:
+      - dvwa
+    environment:
+      # Backend to protect
+      BACKEND: "http://dvwa:80"
+      # ModSecurity enforcement mode: On | DetectionOnly | Off
+      MODSEC_RULE_ENGINE: "On"
+      # Paranoia level 1=low FP, 4=max detection (start with 1, tune up)
+      PARANOIA: 1
+      # Anomaly scoring thresholds (inbound / outbound)
+      ANOMALY_INBOUND: 5
+      ANOMALY_OUTBOUND: 4
+      # Listening port inside container
+      PORT: 80
+      # Logging
+      ACCESSLOG: "/var/log/nginx/access.log"
+      ERRORLOG: "/var/log/nginx/error.log"
+    volumes:
+      # Custom Nginx server block (tuning, exclusions)
+      - ./phase2-modsecurity/nginx/default.conf:/etc/nginx/templates/conf.d/default.conf.template:ro
+      # Custom ModSecurity rules / exclusions
+      - ./phase2-modsecurity/crs-setup/custom-exclusions.conf:/etc/modsecurity.d/owasp-crs/rules/CUSTOM-exclusions.conf:ro
+      # Persist WAF logs for analysis
+      - waf_logs:/var/log/nginx
+    ports:
+      - "8080:80"
+    networks:
+      - public
+      - internal
+
+volumes:
+  db_data:
+  waf_logs:
+
+networks:
+  # DVWA ↔ DB ↔ WAF communicate here (not reachable from host)
+  internal:
+    driver: bridge
+  # WAF exposed to host; DVWA port 8888 also on public for Phase 1
+  public:
+    driver: bridge
