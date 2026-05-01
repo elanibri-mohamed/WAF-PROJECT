@@ -92,6 +92,25 @@ services:
       - public
       - internal
 
+  phase3-waf:
+    build:
+      context: ./phase3-custom-waf
+    container_name: phase3-waf
+    restart: unless-stopped
+    depends_on:
+      - dvwa
+    environment:
+      WAF_HOST: "0.0.0.0"
+      WAF_PORT: "8090"
+      BACKEND_URL: "http://dvwa:80"
+    volumes:
+      - ./phase3-custom-waf/logs:/app/logs
+    ports:
+      - "8090:8090"
+    networks:
+      - public
+      - internal
+
 volumes:
   db_data:
   waf_logs:

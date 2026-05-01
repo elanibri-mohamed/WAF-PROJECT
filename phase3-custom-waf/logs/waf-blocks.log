@@ -1,0 +1,8 @@
+2026-05-01T23:35:33Z | 172.20.0.1 | SQLI-001 | UNION SELECT statement | URI | /vulnerabilities/sqli/?id=1' UNION SELECT user, password FROM users-- -&Submit=Submit
+2026-05-01T23:35:57Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<script>alert(1)</script>
+2026-05-01T23:36:11Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<script>alert(1)</script>
+2026-05-01T23:39:34Z | 172.20.0.1 | XSS-002 | Event handler attributes (onerror, onload, etc.) | URI | /vulnerabilities/xss_r/?name=<style>@keyframes x{}</style><image style="animation-name:x" onanimationend="alert(1)"></image>
+2026-05-01T23:49:27Z | 172.20.0.1 | SQLI-001 | UNION SELECT statement | URI | /vulnerabilities/sqli/?id=1' UNION SELECT user, password FROM users-- -&Submit=Submit
+2026-05-01T23:50:06Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1' AND SLEEP(3)-- -&Submit=Submit
+2026-05-01T23:51:06Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<script>alert('XSS by ' + document.domain)</script>
+2026-05-01T23:51:33Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<script>document.body.style.background='red'</script>
