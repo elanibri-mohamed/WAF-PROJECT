@@ -1,6 +1,6 @@
-# Under the Hood — WAF Project
+﻿# Under the Hood — WAF Project
 
-> Deploying and analysing ModSecurity as a reverse-proxy WAF in front of DVWA.
+> Deploying and analysing ModSecurity and a custom Python WAF in front of DVWA.
 
 ---
 
@@ -16,13 +16,16 @@
 │                          [DVWA :80]  ◄── [MariaDB]  │
 │                                                      │
 │  Browser ──► :8888 ──► [DVWA :80]  (Phase 1, raw)  │
+│                                                      │
+│  Browser ──► :8090 ──► [Custom Python WAF]          │
 └─────────────────────────────────────────────────────┘
 ```
 
-| Port   | What                          | When to use        |
-|--------|-------------------------------|--------------------|
-| `8888` | DVWA unprotected (raw)        | Phase 1 exploiting |
-| `8080` | DVWA behind ModSecurity WAF   | Phase 2 testing    |
+| Port   | What                                  | When to use        |
+|--------|---------------------------------------|--------------------|
+| `8888` | DVWA unprotected (raw)                | Phase 1 exploiting |
+| `8080` | DVWA behind ModSecurity WAF           | Phase 2 testing    |
+| `8090` | DVWA behind custom Python/aiohttp WAF | Phase 3 testing    |
 
 ---
 
@@ -43,7 +46,7 @@
 docker compose up dvwa db -d
 
 # Browse to:
-open http://localhost:8888/setup.php
+http://localhost:8888/setup.php
 # Click "Create / Reset Database"
 # Login: admin / password
 # Set security level to: Low
@@ -58,10 +61,20 @@ See [`phase1-target/exploit-notes.md`](phase1-target/exploit-notes.md) for the f
 docker compose up -d
 
 # WAF-protected endpoint:
-open http://localhost:8080
+http://localhost:8080
 
 # Unprotected still available for comparison:
-open http://localhost:8888
+http://localhost:8888
+```
+
+### Phase 3 — Custom Python WAF
+
+```bash
+# Build and run the custom WAF service
+docker compose up -d phase3-waf
+
+# Custom WAF endpoint:
+http://localhost:8090
 ```
 
 ---
@@ -71,23 +84,26 @@ open http://localhost:8888
 Run these from your terminal. The WAF endpoint should return `403 Forbidden`.
 
 ```bash
-# SQLi — Union-based
+# SQLi — Union-based through ModSecurity
 curl -i "http://localhost:8080/vulnerabilities/sqli/?id=1'+UNION+SELECT+1,2--+-&Submit=Submit" \
      -b "PHPSESSID=<your_session>; security=low"
 
-# SQLi — Tautology
-curl -i "http://localhost:8080/vulnerabilities/sqli/?id=1'+OR+'1'%3D'1&Submit=Submit" \
-     -b "PHPSESSID=<your_session>; security=low"
-
-# XSS — Reflected
+# XSS — Reflected through ModSecurity
 curl -i "http://localhost:8080/vulnerabilities/xss_r/?name=<script>alert(1)</script>&Submit=Submit" \
      -b "PHPSESSID=<your_session>; security=low"
+
+# SQLi — Union-based through custom WAF
+curl -i "http://localhost:8090/vulnerabilities/sqli/?id=1'+UNION+SELECT+1,2--+-&Submit=Submit" \
+     -b "PHPSESSID=<your_session>; security=low"
+
+# XSS — Reflected through custom WAF
+curl -i "http://localhost:8090/vulnerabilities/xss_r/?name=<script>alert(1)</script>&Submit=Submit" \
+     -b "PHPSESSID=<your_session>; security=low"
 ```
 
-Expected response:
+Expected response from either WAF:
 ```
 HTTP/1.1 403 Forbidden
-X-WAF-Protected: ModSecurity/CRS
 ```
 
 Same payloads against `localhost:8888` (unprotected) should succeed.
@@ -98,9 +114,11 @@ Same payloads against `localhost:8888` (unprotected) should succeed.
 
 | File | Purpose |
 |------|---------|
-| `phase2-modsecurity/nginx/default.conf` | Nginx reverse proxy — forwarding rules, headers, 403 page |
-| `phase2-modsecurity/crs-setup/custom-exclusions.conf` | Per-URI exclusions to eliminate DVWA false positives |
-| `docker-compose.yml` | Environment variables controlling CRS paranoia level and mode |
+| `phase2-modsecurity/nginx/default.conf` | Nginx reverse proxy config for ModSecurity |
+| `phase2-modsecurity/crs-setup/custom-exclusions.conf` | Custom exclusions to reduce DVWA false positives |
+| `phase3-custom-waf/Dockerfile` | Container build for the custom aiohttp WAF |
+| `phase3-custom-waf/config.py` | Runtime settings and Docker environment integration |
+| `docker-compose.yml` | Orchestrates DVWA, DB, ModSecurity WAF, and custom WAF |
 
 ### Key tuning knobs (in `docker-compose.yml`)
 
@@ -111,32 +129,33 @@ ANOMALY_INBOUND: 5             # Score threshold to block a request
 ANOMALY_OUTBOUND: 4            # Score threshold to block a response
 ```
 
-Raise `PARANOIA` to `2` when you want stricter detection at the cost of more false positives.
-
 ---
 
 ## Viewing WAF Logs
 
+### Phase 2 (ModSecurity)
+
 ```bash
-# Live log stream from the WAF container
 docker compose logs -f waf
-
-# Access the raw log files
-docker exec modsec-waf tail -f /var/log/nginx/error.log
-
-# Filter only ModSecurity block events
-docker exec modsec-waf grep -i "ModSecurity" /var/log/nginx/error.log | grep "Access denied"
 ```
 
-A blocked request looks like:
+### Phase 3 (Custom WAF)
+
+```bash
+docker compose logs -f phase3-waf
+```
+
+### Inspect custom WAF log file
+
+```bash
+# On the host
+cat phase3-custom-waf/logs/waf-blocks.log
+```
+
+A blocked request from the custom WAF looks like a pipe-delimited log entry:
 
 ```
-[error] ModSecurity: Access denied with code 403 (phase 2).
-  Matched Data: "UNION SELECT" found within ARGS:id
-  [id "942100"] [msg "SQL Injection Attack Detected via libinjection"]
-  [tag "attack-sqli"]
-  [hostname "localhost"] [uri "/vulnerabilities/sqli/"]
-  [unique_id "..."]
+TIMESTAMP | ATTACKER_IP | RULE_ID | RULE_NAME | LOCATION | PAYLOAD
 ```
 
 ---
@@ -156,15 +175,22 @@ docker compose down -v       # stop containers AND delete DB data
 waf-project/
 ├── docker-compose.yml                        ← orchestrates all services
 ├── README.md
-│
+├── report/
+│   └── final-report.md                      ← consolidated progress report
 ├── phase1-target/
 │   ├── exploit-notes.md                      ← manual attack walkthrough
 │   └── screenshots/                          ← proof of vulnerability
-│
-└── phase2-modsecurity/
-    ├── nginx/
-    │   └── default.conf                      ← reverse proxy config
-    ├── crs-setup/
-    │   └── custom-exclusions.conf            ← DVWA false-positive tuning
-    └── screenshots/                          ← proof of WAF blocking
+├── phase2-modsecurity/
+│   ├── nginx/
+│   │   └── default.conf                      ← reverse proxy config
+│   ├── crs-setup/
+│   │   └── custom-exclusions.conf            ← DVWA false-positive tuning
+│   └── screenshots/                          ← proof of WAF blocking
+└── phase3-custom-waf/
+    ├── waf.py                               ← custom Python WAF entrypoint
+    ├── config.py                            ← runtime settings and Docker integration
+    ├── engine/                              ← detection logic and response components
+    ├── logs/                                ← WAF block logs
+    ├── screenshots/                          ← Phase 3 proof of blocks and logs
+    └── Dockerfile                           ← custom WAF container build
 ```

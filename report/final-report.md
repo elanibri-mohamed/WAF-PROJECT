@@ -29,7 +29,7 @@ The stack is orchestrated from `docker-compose.yml`.
 ### 2.3 How it was built
 
 1. **Phase 1**: Started DVWA and MariaDB only with:
-   ```bash
+```bash
 docker compose up dvwa db -d
 ```
 2. **Phase 2**: Started the full ModSecurity stack with:
