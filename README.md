@@ -4,6 +4,35 @@
 
 ---
 
+## Getting Started
+
+```bash
+# Clone the repository
+git clone <repo-url> waf-project
+cd waf-project
+
+# Build and run the Docker infrastructure
+docker compose up -d
+
+# Confirm services are running
+docker compose ps
+```
+
+### Quick validation
+
+```bash
+# Test the unprotected DVWA target
+curl -I http://localhost:8888
+
+# Test the ModSecurity protected endpoint
+curl -I http://localhost:8080
+
+# Test the custom WAF endpoint
+curl -I http://localhost:8090
+```
+
+---
+
 ## Architecture
 
 ```
