@@ -8,7 +8,7 @@
 
 ```bash
 # Clone the repository
-git clone <repo-url> waf-project
+git clone https://github.com/elanibri-mohamed/WAF-PROJECT waf-project
 cd waf-project
 
 # Build and run the Docker infrastructure
