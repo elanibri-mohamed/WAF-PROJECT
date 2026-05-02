@@ -263,16 +263,6 @@ def write_markdown(reports: list[TargetReport]) -> None:
             for res in bypassed:
                 lines.append(f"- `{res.payload}` — *{res.label}* ({res.category})\n")
 
-        # Legitimate requests
-        lines += ["\n#### Legitimate Requests\n\n",
-                  "| # | Label | Method | Endpoint | Param | Value | Status | Blocked |\n",
-                  "|---|-------|--------|----------|-------|-------|--------|---------|\n"]
-        for i, res in enumerate(r.legit_results, 1):
-            blocked_str = "🔴 YES" if res.blocked else ("⚪ ERR" if res.error else "✅ NO")
-            lines.append(
-                f"| {i} | {res.label} | {res.method} | {res.endpoint} | {res.param or '-'} | {res.payload or '-'} | {res.status} | {blocked_str} |\n"
-            )
-
         # False positives
         fps = [res for res in r.legit_results if res.blocked]
         if fps:
