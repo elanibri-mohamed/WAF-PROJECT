@@ -4,6 +4,7 @@
 
 This project delivers a three-phase web application security lab using DVWA and WAF defenses.
 The environment was built with Docker Compose and progressively hardened from an unprotected target (Phase 1) to ModSecurity protection (Phase 2) and a custom Python-based WAF (Phase 3).
+Phase 4 is now in progress with automated attack validation comparing all three targets and generating `phase4-testing/results-summary.md`.
 
 ## 2. Architecture & Setup
 
@@ -111,7 +112,22 @@ The custom WAF inspects requests, applies regex rules, returns a custom block pa
 
 ![Phase 3 XSS Block and Logs](../phase3-custom-waf/screenshots/XSS-reflectedBlockAndLogs.png)
 
-### 3.4 Logs and blocking evidence
+### 3.4 Phase 4 — Automated comparison testing
+
+Phase 4 adds automated validation across all three targets using `phase4-testing/attack_script.py`.
+
+- The script fires 26 malicious payloads and 7 legitimate requests against:
+  - Unprotected DVWA on `http://localhost:8888`
+  - ModSecurity WAF on `http://localhost:8080`
+  - Custom Python WAF on `http://localhost:8090`
+- Latest automated results show:
+  - `Unprotected`: baseline with 0/26 blocked, all attacks passed.
+  - `ModSecurity`: `23/26` blocked, `3` bypasses.
+  - `Custom WAF`: `25/26` blocked, `1` bypass.
+  - No false positives were observed in the latest run.
+- The generated report is stored in `phase4-testing/results-summary.md`.
+
+### 3.5 Logs and blocking evidence
 
 - Custom WAF logs are stored in `phase3-custom-waf/logs/waf-blocks.log`.
 - `phase3-custom-waf/screenshots/*Logs*.png` evidence shows the block page and the generated log entries.

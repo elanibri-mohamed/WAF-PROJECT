@@ -1,4 +1,4 @@
-﻿FROM python:3.11-slim
+﻿FROM python:3.12-slim
 
 WORKDIR /app
 
@@ -7,6 +7,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 8080
+RUN mkdir -p logs
+
+EXPOSE 8090
 
 CMD ["python", "waf.py"]

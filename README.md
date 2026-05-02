@@ -4,6 +4,13 @@
 
 ---
 
+## Current Progress
+
+- Phase 1 complete: unprotected DVWA is running on `http://localhost:8888` and serves as the baseline vulnerable target.
+- Phase 2 complete: ModSecurity is deployed on `http://localhost:8080` and blocks most SQLi/XSS payloads.
+- Phase 3 complete: custom Python WAF is running on `http://localhost:8090` and currently blocks 25/26 attack payloads in automated tests.
+- Phase 4 in progress: `phase4-testing/attack_script.py` automates 26 attack payloads and 7 legitimate requests per target, generating `phase4-testing/results-summary.md`.
+
 ## Getting Started
 
 ```bash
@@ -105,6 +112,17 @@ docker compose up -d phase3-waf
 # Custom WAF endpoint:
 http://localhost:8090
 ```
+
+### Phase 4 — Automated testing
+
+```bash
+cd phase4-testing
+python attack_script.py --session <your_phpsessid>
+```
+
+- Generates `results-summary.md` with attack results for all three targets.
+- Verifies the custom WAF, ModSecurity WAF, and unprotected DVWA using 26 attack payloads plus 7 legit requests.
+- Current observed block rates: `ModSecurity ~88.5%`, `Custom WAF ~96.2%`, with no false positives in the latest run.
 
 ---
 

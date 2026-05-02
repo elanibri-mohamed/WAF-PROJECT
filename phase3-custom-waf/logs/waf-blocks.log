@@ -6,3 +6,61 @@
 2026-05-01T23:50:06Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1' AND SLEEP(3)-- -&Submit=Submit
 2026-05-01T23:51:06Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<script>alert('XSS by ' + document.domain)</script>
 2026-05-01T23:51:33Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<script>document.body.style.background='red'</script>
+2026-05-02T09:51:19Z | 172.20.0.1 | SQLI-001 | UNION SELECT statement | URI | /vulnerabilities/sqli/?id=1' UNION SELECT user, password FROM users-- -&Submit=Submit
+2026-05-02T09:51:59Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<script>alert(1)</script>
+2026-05-02T10:28:52Z | 172.20.0.1 | XSS-002 | Event handler attributes (onerror, onload, etc.) | URI | /vulnerabilities/xss_r/?name=<pre>Hello <img src=x onerror=alert(1)></pre>
+2026-05-02T10:33:56Z | 172.20.0.1 | XSS-002 | Event handler attributes (onerror, onload, etc.) | BODY | txtName=<img src=x onerror=alert(1)>&mtxMessage=test&btnSign=Sign Guestbook
+2026-05-02T10:36:44Z | 172.20.0.1 | XSS-002 | Event handler attributes (onerror, onload, etc.) | URI | /vulnerabilities/xss_d/?default=<img src=x onerror=alert(1)>
+2026-05-02T10:40:02Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | BODY | username=admin'--&password=jkhkjhjjkh&Login=Login&user_token=e01fa3dd078d4f0d5223e0ae3d118cc7
+2026-05-02T10:53:20Z | 172.20.0.1 | SQLI-001 | UNION SELECT statement | URI | /vulnerabilities/sqli/?id=1' UNION SELECT user,password FROM users-- -
+2026-05-02T10:53:20Z | 172.20.0.1 | SQLI-002 | Boolean tautology (OR 1=1 variants) | URI | /vulnerabilities/sqli/?id=1' OR '1'='1
+2026-05-02T10:53:20Z | 172.20.0.1 | SQLI-002 | Boolean tautology (OR 1=1 variants) | URI | /vulnerabilities/sqli/?id=' OR 1=1--
+2026-05-02T10:53:21Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1' AND SLEEP(1)-- -
+2026-05-02T10:53:21Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1'-- -
+2026-05-02T10:53:21Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1'; DROP TABLE users--
+2026-05-02T10:53:21Z | 172.20.0.1 | SQLI-001 | UNION SELECT statement | URI | /vulnerabilities/sqli/?id=0 UNION SELECT 1,2
+2026-05-02T10:53:21Z | 172.20.0.1 | SQLI-001 | UNION SELECT statement | URI | /vulnerabilities/sqli/?id=1' UNION SELECT 1,2--
+2026-05-02T10:53:21Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1' AND 1=2--
+2026-05-02T10:53:21Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | BODY | username=admin'--&Submit=Submit
+2026-05-02T10:53:22Z | 172.20.0.1 | SQLI-002 | Boolean tautology (OR 1=1 variants) | BODY | password=' OR '1'='1&Submit=Submit
+2026-05-02T10:53:22Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<script>alert(1)</script>
+2026-05-02T10:53:22Z | 172.20.0.1 | XSS-002 | Event handler attributes (onerror, onload, etc.) | URI | /vulnerabilities/xss_r/?name=<img src=x onerror=alert(1)>
+2026-05-02T10:53:22Z | 172.20.0.1 | XSS-002 | Event handler attributes (onerror, onload, etc.) | URI | /vulnerabilities/xss_r/?name=<svg onload=alert(1)>
+2026-05-02T10:53:22Z | 172.20.0.1 | XSS-003 | javascript: URI scheme | URI | /vulnerabilities/xss_r/?name=<a href=javascript:alert(1)>x</a>
+2026-05-02T10:53:22Z | 172.20.0.1 | XSS-002 | Event handler attributes (onerror, onload, etc.) | URI | /vulnerabilities/xss_r/?name=<input onfocus=alert(1) autofocus>
+2026-05-02T10:53:22Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<script>alert(1)</script>
+2026-05-02T10:53:22Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<script>document.cookie</script>
+2026-05-02T10:53:23Z | 172.20.0.1 | XSS-003 | javascript: URI scheme | URI | /vulnerabilities/xss_r/?name=<iframe src=javascript:alert(1)>
+2026-05-02T10:53:23Z | 172.20.0.1 | XSS-001 | Script tag | BODY | mtxMessage=<script>alert('stored')</script>&Submit=Submit
+2026-05-02T10:53:23Z | 172.20.0.1 | XSS-002 | Event handler attributes (onerror, onload, etc.) | BODY | mtxMessage=<svg onload=alert(1)>&Submit=Submit
+2026-05-02T10:53:23Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<ScRiPt>alert(1)</sCrIpT>
+2026-05-02T10:53:23Z | 172.20.0.1 | XSS-001 | Script tag | QUERY_PARAM:name | <script>alert(1)</script>
+2026-05-02T10:53:23Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1'/**/OR/**/1=1--
+2026-05-02T10:53:23Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1'/*!OR*/1=1--
+2026-05-02T11:01:19Z | 172.20.0.1 | SQLI-001 | UNION SELECT statement | URI | /vulnerabilities/sqli/?id=1' UNION SELECT user,password FROM users-- -
+2026-05-02T11:01:19Z | 172.20.0.1 | SQLI-002 | Boolean tautology (OR 1=1 variants) | URI | /vulnerabilities/sqli/?id=1' OR '1'='1
+2026-05-02T11:01:19Z | 172.20.0.1 | SQLI-002 | Boolean tautology (OR 1=1 variants) | URI | /vulnerabilities/sqli/?id=' OR 1=1--
+2026-05-02T11:01:20Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1' AND SLEEP(1)-- -
+2026-05-02T11:01:20Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1'-- -
+2026-05-02T11:01:21Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1'; DROP TABLE users--
+2026-05-02T11:01:21Z | 172.20.0.1 | SQLI-001 | UNION SELECT statement | URI | /vulnerabilities/sqli/?id=0 UNION SELECT 1,2
+2026-05-02T11:01:21Z | 172.20.0.1 | SQLI-001 | UNION SELECT statement | URI | /vulnerabilities/sqli/?id=1' UNION SELECT 1,2--
+2026-05-02T11:01:21Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1' AND 1=2--
+2026-05-02T11:01:22Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | BODY | username=admin'--&Submit=Submit
+2026-05-02T11:01:22Z | 172.20.0.1 | SQLI-002 | Boolean tautology (OR 1=1 variants) | BODY | password=' OR '1'='1&Submit=Submit
+2026-05-02T11:01:22Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<script>alert(1)</script>
+2026-05-02T11:01:22Z | 172.20.0.1 | XSS-002 | Event handler attributes (onerror, onload, etc.) | URI | /vulnerabilities/xss_r/?name=<img src=x onerror=alert(1)>
+2026-05-02T11:01:22Z | 172.20.0.1 | XSS-002 | Event handler attributes (onerror, onload, etc.) | URI | /vulnerabilities/xss_r/?name=<svg onload=alert(1)>
+2026-05-02T11:01:22Z | 172.20.0.1 | XSS-003 | javascript: URI scheme | URI | /vulnerabilities/xss_r/?name=<a href=javascript:alert(1)>x</a>
+2026-05-02T11:01:23Z | 172.20.0.1 | XSS-002 | Event handler attributes (onerror, onload, etc.) | URI | /vulnerabilities/xss_r/?name=<input onfocus=alert(1) autofocus>
+2026-05-02T11:01:23Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<script>alert(1)</script>
+2026-05-02T11:01:23Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<script>document.cookie</script>
+2026-05-02T11:01:23Z | 172.20.0.1 | XSS-003 | javascript: URI scheme | URI | /vulnerabilities/xss_r/?name=<iframe src=javascript:alert(1)>
+2026-05-02T11:01:23Z | 172.20.0.1 | XSS-001 | Script tag | BODY | mtxMessage=<script>alert('stored')</script>&Submit=Submit
+2026-05-02T11:01:23Z | 172.20.0.1 | XSS-002 | Event handler attributes (onerror, onload, etc.) | BODY | mtxMessage=<svg onload=alert(1)>&Submit=Submit
+2026-05-02T11:01:23Z | 172.20.0.1 | XSS-001 | Script tag | URI | /vulnerabilities/xss_r/?name=<ScRiPt>alert(1)</sCrIpT>
+2026-05-02T11:01:24Z | 172.20.0.1 | XSS-001 | Script tag | QUERY_PARAM:name | <script>alert(1)</script>
+2026-05-02T11:01:24Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1'/**/OR/**/1=1--
+2026-05-02T11:01:24Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1'/*!OR*/1=1--
+2026-05-02T11:02:15Z | 172.20.0.1 | SQLI-003 | SQL comment sequences | URI | /vulnerabilities/sqli/?id=1'-- -&Submit=Submit
+2026-05-02T11:04:15Z | 172.20.0.1 | XSS-001 | Script tag | QUERY_PARAM:name | <script>alert(1)</script>
