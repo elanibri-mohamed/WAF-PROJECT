@@ -65,34 +65,57 @@ The Phase 3 WAF consists of:
 
 ### 3.1 Phase 1 — Vulnerable DVWA attack confirmation
 
-- `phase1-target/screenshots/dvwaSecurityLevel_low.png` — DVWA security level set to Low.
-- `phase1-target/screenshots/SQLi_exists.png` — SQL injection vulnerability verified.
-- `phase1-target/screenshots/SQLi_exploited1.png` and `SQLi_exploited2.png` — Successful SQL injection payload execution.
-- `phase1-target/screenshots/XSS-reflected_try.png` and `XSS-reflected_Works.png` — Reflected XSS payload fired.
+The initial phase proves the vulnerable application is exploitable without any WAF protection.
+
+- `phase1-target/screenshots/dvwaSecurityLevel_low.png` — DVWA configured to Low security.
+- `phase1-target/screenshots/SQLi_exists.png` — SQL injection attack surface confirmed.
+- `phase1-target/screenshots/SQLi_exploited1.png` and `phase1-target/screenshots/SQLi_exploited2.png` — Successful SQLi payload execution.
+- `phase1-target/screenshots/XSS-reflected_try.png` and `phase1-target/screenshots/XSS-reflected_Works.png` — Reflected XSS executed successfully.
+
+![DVWA Security Level Low](../phase1-target/screenshots/dvwaSecurityLevel_low.png)
+
+![Phase 1 SQLi Verified](../phase1-target/screenshots/SQLi_exists.png)
+
+![Phase 1 XSS Proof](../phase1-target/screenshots/XSS-reflected_Works.png)
 
 ### 3.2 Phase 2 — ModSecurity WAF blocking attacks
 
-- `phase2-modsecurity/screenshots/SQLi_try.png` — Attempted SQLi payload through the WAF.
-- `phase2-modsecurity/screenshots/SQLi_Block.png` — ModSecurity blocked the SQL injection payload.
-- `phase2-modsecurity/screenshots/XSS_ty1.png` — Attempted XSS payload through the WAF.
-- `phase2-modsecurity/screenshots/XSS_Block.png` — ModSecurity blocked the reflected XSS payload.
-- `phase2-modsecurity/screenshots/normalUse_Allow.png` and `normalUse2_allow.png` — Benign traffic allowed through the WAF.
+This phase demonstrates ModSecurity CRS actively blocking malicious input while allowing normal traffic.
+
+- `phase2-modsecurity/screenshots/SQLi_try.png` — Attack request sent through the WAF.
+- `phase2-modsecurity/screenshots/SQLi_Block.png` — ModSecurity returned a block response.
+- `phase2-modsecurity/screenshots/XSS_ty1.png` — XSS payload attempt through the WAF.
+- `phase2-modsecurity/screenshots/XSS_Block.png` — WAF blocked the XSS attack.
+- `phase2-modsecurity/screenshots/normalUse_Allow.png` and `phase2-modsecurity/screenshots/normalUse2_allow.png` — Normal requests passed successfully.
+
+![Phase 2 SQLi Block](../phase2-modsecurity/screenshots/SQLi_Block.png)
+
+![Phase 2 XSS Block](../phase2-modsecurity/screenshots/XSS_Block.png)
 
 ### 3.3 Phase 3 — Custom WAF blocking and logging
 
-- `phase3-custom-waf/screenshots/verifyInCustomWafLisPort.png` — Custom WAF listening on `http://localhost:8090`.
-- `phase3-custom-waf/screenshots/SQLi-test.png` — SQLi attack attempt against the custom WAF.
-- `phase3-custom-waf/screenshots/SQLi-Unionattack-block.png` and `SQLi-unionatackBlockandLogs.png` — Custom WAF blocked a UNION-based SQLi attack and logged the event.
-- `phase3-custom-waf/screenshots/SQLi-SleepBlock.png` and `SQLi-SleepBlockandLogs.png` — Custom WAF blocked a blind SQLi sleep payload and wrote a log entry.
-- `phase3-custom-waf/screenshots/XSS-reflectedBLock.png`, `XSS-reflectedBlockAndLogs.png`, and `XSS-reflectedBLockAndlLogs2.png` — Custom WAF detected and blocked reflected XSS requests while generating block logs.
-- `phase3-custom-waf/screenshots/FullPackRunning.png` — Phase 3 WAF stack running with custom protections.
-- `phase3-custom-waf/screenshots/minFalsePositives.png` — Evidence of tuning for low false positives.
+The custom WAF inspects requests, applies regex rules, returns a custom block page and logs events.
+
+- `phase3-custom-waf/screenshots/verifyInCustomWafLisPort.png` — Custom WAF active on `http://localhost:8090`.
+- `phase3-custom-waf/screenshots/SQLi-test.png` — SQLi request passed to the custom WAF.
+- `phase3-custom-waf/screenshots/SQLi-Unionattack-block.png` — UNION-based SQLi blocked.
+- `phase3-custom-waf/screenshots/SQLi-unionatackBlockandLogs.png` — Block page plus log entry for the UNION attack.
+- `phase3-custom-waf/screenshots/SQLi-SleepBlock.png` and `phase3-custom-waf/screenshots/SQLi-SleepBlockandLogs.png` — Sleep-based blind SQLi blocked and recorded.
+- `phase3-custom-waf/screenshots/XSS-reflectedBLock.png`, `phase3-custom-waf/screenshots/XSS-reflectedBlockAndLogs.png`, and `phase3-custom-waf/screenshots/XSS-reflectedBLockAndlLogs2.png` — Reflected XSS detection, blocking and logging.
+- `phase3-custom-waf/screenshots/FullPackRunning.png` — Full custom WAF service running.
+- `phase3-custom-waf/screenshots/minFalsePositives.png` — Proof of tuning to reduce false positives.
+
+![Phase 3 WAF Listening](../phase3-custom-waf/screenshots/verifyInCustomWafLisPort.png)
+
+![Phase 3 SQLi Block and Logs](../phase3-custom-waf/screenshots/SQLi-unionatackBlockandLogs.png)
+
+![Phase 3 XSS Block and Logs](../phase3-custom-waf/screenshots/XSS-reflectedBlockAndLogs.png)
 
 ### 3.4 Logs and blocking evidence
 
 - Custom WAF logs are stored in `phase3-custom-waf/logs/waf-blocks.log`.
-- Screenshots with `Logs` in the name show both the block page and the corresponding log entry being generated.
-- ModSecurity block event evidence is available in `phase2-modsecurity/screenshots`.
+- `phase3-custom-waf/screenshots/*Logs*.png` evidence shows the block page and the generated log entries.
+- ModSecurity block evidence is available in `phase2-modsecurity/screenshots` and linked above.
 
 ## 4. Summary
 
