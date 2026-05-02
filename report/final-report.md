@@ -33,7 +33,7 @@ The stack is orchestrated from `docker-compose.yml`.
 docker compose up dvwa db -d
 ```
 2. **Phase 2**: Started the full ModSecurity stack with:
-   ```bash
+```bash
 docker compose up -d
 ```
    - ModSecurity CRS forwards requests from `8080` to DVWA.
