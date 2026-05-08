@@ -67,6 +67,35 @@ ATTACK_PAYLOADS = [
     ("Stored XSS message",      "XSS",  "/vulnerabilities/xss_s/",    "POST", "mtxMessage", "<script>alert('stored')</script>"),
     ("Stored SVG payload",      "XSS",  "/vulnerabilities/xss_s/",    "POST", "mtxMessage", "<svg onload=alert(1)>"),
 
+    # ── Command Injection ─────────────────────────────────────
+    ("CMDI ping with ; ls",     "CMDI", "/vulnerabilities/exec/",     "GET",  "ip", "127.0.0.1; ls"),
+    ("CMDI cat /etc/passwd",    "CMDI", "/vulnerabilities/exec/",     "GET",  "ip", "127.0.0.1 | cat /etc/passwd"),
+    ("CMDI system() call",      "CMDI", "/vulnerabilities/exec/",     "GET",  "ip", "127.0.0.1; system('whoami')"),
+    ("CMDI backticks",          "CMDI", "/vulnerabilities/exec/",     "GET",  "ip", "`whoami`"),
+    ("CMDI $() substitution",   "CMDI", "/vulnerabilities/exec/",     "GET",  "ip", "$(whoami)"),
+
+    # ── File Inclusion/Path Traversal ─────────────────────────
+    ("LFI ../../etc/passwd",    "LFI",  "/vulnerabilities/fi/",       "GET",  "page", "../../etc/passwd"),
+    ("LFI php://input",         "LFI",  "/vulnerabilities/fi/",       "GET",  "page", "php://input"),
+    ("LFI null byte",           "LFI",  "/vulnerabilities/fi/",       "GET",  "page", "../../etc/passwd%00"),
+    ("LFI encoded traversal",   "LFI",  "/vulnerabilities/fi/",       "GET",  "page", "%2e%2e%2f%2e%2e%2fetc%2fpasswd"),
+
+    # ── File Upload ───────────────────────────────────────────
+    ("FUPL PHP file upload",    "FUPL", "/vulnerabilities/upload/",   "POST", "uploaded", "filename=\"evil.php\""),
+    ("FUPL double ext",         "FUPL", "/vulnerabilities/upload/",   "POST", "uploaded", "filename=\"shell.jpg.php\""),
+    ("FUPL PHP content",        "FUPL", "/vulnerabilities/upload/",   "POST", "uploaded", "<?php echo 'evil'; ?>"),
+
+    # ── Open Redirect ─────────────────────────────────────────
+    ("REDIR external URL",      "REDIR","/?redirect=https://evil.com","GET",  "redirect", "https://evil.com"),
+    ("REDIR IP redirect",       "REDIR","/?url=192.168.1.1",          "GET",  "url", "192.168.1.1"),
+
+    # ── Header Injection ──────────────────────────────────────
+    ("HDR CRLF injection",      "HDR",  "/",                          "GET",  "test", "value\r\nX-Injected: evil"),
+    ("HDR Host injection",      "HDR",  "/",                          "GET",  "test", "X-Forwarded-Host: evil.com"),
+
+    # ── Brute Force ───────────────────────────────────────────
+    ("BRUTE login attempt",     "BRUTE","/vulnerabilities/brute/",    "GET",  "username", "admin&password=pass"),
+
     # ── Bypass attempts ───────────────────────────────────────
     ("XSS case variation",      "XSS",  "/vulnerabilities/xss_r/",    "GET",  "name", "<ScRiPt>alert(1)</sCrIpT>"),
     ("XSS double encode",       "XSS",  "/vulnerabilities/xss_r/",    "GET",  "name", "%253Cscript%253Ealert(1)%253C%252Fscript%253E"),
@@ -83,6 +112,12 @@ LEGIT_REQUESTS = [
     ("XSS page load",    "GET",  "/vulnerabilities/xss_r/",  None, None),
     ("Normal search",    "GET",  "/vulnerabilities/sqli/",   "id", "1"),
     ("Normal name",      "GET",  "/vulnerabilities/xss_r/",  "name", "Alice"),
+    ("CMDI page load",   "GET",  "/vulnerabilities/exec/",   None, None),
+    ("Normal ping",      "GET",  "/vulnerabilities/exec/",   "ip", "127.0.0.1"),
+    ("LFI page load",    "GET",  "/vulnerabilities/fi/",     None, None),
+    ("Normal include",   "GET",  "/vulnerabilities/fi/",     "page", "include.php"),
+    ("FUPL page load",   "GET",  "/vulnerabilities/upload/", None, None),
+    ("BRUTE page load",  "GET",  "/vulnerabilities/brute/",  None, None),
 ]
 
 

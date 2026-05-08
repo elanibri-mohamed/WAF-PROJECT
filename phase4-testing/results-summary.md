@@ -1,6 +1,6 @@
 # Phase 4 — Testing Results
-**Generated:** 2026-05-02 11:01 UTC  
-**Total payloads fired:** 26 attacks + 7 legit requests per target
+**Generated:** 2026-05-08 20:31 UTC  
+**Total payloads fired:** 43 attacks + 13 legit requests per target
 
 ---
 
@@ -8,9 +8,9 @@
 
 | Target | Blocked | Bypassed | Block Rate | False Positives | Avg Latency |
 |--------|---------|----------|------------|-----------------|-------------|
-| Unprotected (8888) | 0/26 | 26 | **0.0%** | 0 | 57ms |
-| ModSecurity (8080) | 23/26 | 3 | **88.5%** | 0 | 66ms |
-| Custom WAF (8090) | 25/26 | 1 | **96.2%** | 0 | 75ms |
+| Unprotected (8888) | 0/43 | 43 | **0.0%** | 0 | 53ms |
+| ModSecurity (8080) | 33/43 | 10 | **76.7%** | 0 | 55ms |
+| Custom WAF (8090) | 26/43 | 17 | **60.5%** | 0 | 94ms |
 
 ---
 
@@ -19,10 +19,10 @@
 ### Unprotected (8888)
 
 - **Block rate:** 0.0%  
-- **Blocked:** 0 / 26  
-- **Bypassed:** 26  
+- **Blocked:** 0 / 43  
+- **Bypassed:** 43  
 - **False positives:** 0  
-- **Avg response time:** 57ms  
+- **Avg response time:** 53ms  
 
 #### Attack Results
 
@@ -50,10 +50,27 @@
 | 20 | iframe injection | XSS | 200 | 🟢 NO |
 | 21 | Stored XSS message | XSS | 200 | 🟢 NO |
 | 22 | Stored SVG payload | XSS | 200 | 🟢 NO |
-| 23 | XSS case variation | XSS | 200 | 🟢 NO |
-| 24 | XSS double encode | XSS | 200 | 🟢 NO |
-| 25 | SQLi space bypass | SQLi | 200 | 🟢 NO |
-| 26 | SQLi comment bypass | SQLi | 200 | 🟢 NO |
+| 23 | CMDI ping with ; ls | CMDI | 200 | 🟢 NO |
+| 24 | CMDI cat /etc/passwd | CMDI | 200 | 🟢 NO |
+| 25 | CMDI system() call | CMDI | 200 | 🟢 NO |
+| 26 | CMDI backticks | CMDI | 200 | 🟢 NO |
+| 27 | CMDI $() substitution | CMDI | 200 | 🟢 NO |
+| 28 | LFI ../../etc/passwd | LFI | 200 | 🟢 NO |
+| 29 | LFI php://input | LFI | 200 | 🟢 NO |
+| 30 | LFI null byte | LFI | 200 | 🟢 NO |
+| 31 | LFI encoded traversal | LFI | 200 | 🟢 NO |
+| 32 | FUPL PHP file upload | FUPL | 200 | 🟢 NO |
+| 33 | FUPL double ext | FUPL | 200 | 🟢 NO |
+| 34 | FUPL PHP content | FUPL | 200 | 🟢 NO |
+| 35 | REDIR external URL | REDIR | 200 | 🟢 NO |
+| 36 | REDIR IP redirect | REDIR | 200 | 🟢 NO |
+| 37 | HDR CRLF injection | HDR | 200 | 🟢 NO |
+| 38 | HDR Host injection | HDR | 200 | 🟢 NO |
+| 39 | BRUTE login attempt | BRUTE | 200 | 🟢 NO |
+| 40 | XSS case variation | XSS | 200 | 🟢 NO |
+| 41 | XSS double encode | XSS | 200 | 🟢 NO |
+| 42 | SQLi space bypass | SQLi | 200 | 🟢 NO |
+| 43 | SQLi comment bypass | SQLi | 200 | 🟢 NO |
 
 #### ⚠️ Bypassed Payloads
 
@@ -79,6 +96,24 @@
 - `<iframe src=javascript:alert(1)>` — *iframe injection* (XSS)
 - `<script>alert('stored')</script>` — *Stored XSS message* (XSS)
 - `<svg onload=alert(1)>` — *Stored SVG payload* (XSS)
+- `127.0.0.1; ls` — *CMDI ping with ; ls* (CMDI)
+- `127.0.0.1 | cat /etc/passwd` — *CMDI cat /etc/passwd* (CMDI)
+- `127.0.0.1; system('whoami')` — *CMDI system() call* (CMDI)
+- ``whoami`` — *CMDI backticks* (CMDI)
+- `$(whoami)` — *CMDI $() substitution* (CMDI)
+- `../../etc/passwd` — *LFI ../../etc/passwd* (LFI)
+- `php://input` — *LFI php://input* (LFI)
+- `../../etc/passwd%00` — *LFI null byte* (LFI)
+- `%2e%2e%2f%2e%2e%2fetc%2fpasswd` — *LFI encoded traversal* (LFI)
+- `filename="evil.php"` — *FUPL PHP file upload* (FUPL)
+- `filename="shell.jpg.php"` — *FUPL double ext* (FUPL)
+- `<?php echo 'evil'; ?>` — *FUPL PHP content* (FUPL)
+- `https://evil.com` — *REDIR external URL* (REDIR)
+- `192.168.1.1` — *REDIR IP redirect* (REDIR)
+- `value
+X-Injected: evil` — *HDR CRLF injection* (HDR)
+- `X-Forwarded-Host: evil.com` — *HDR Host injection* (HDR)
+- `admin&password=pass` — *BRUTE login attempt* (BRUTE)
 - `<ScRiPt>alert(1)</sCrIpT>` — *XSS case variation* (XSS)
 - `%253Cscript%253Ealert(1)%253C%252Fscript%253E` — *XSS double encode* (XSS)
 - `1'/**/OR/**/1=1--` — *SQLi space bypass* (SQLi)
@@ -95,16 +130,22 @@
 | 5 | XSS page load | GET | /vulnerabilities/xss_r/ | - | - | 200 | ✅ NO |
 | 6 | Normal search | GET | /vulnerabilities/sqli/ | id | 1 | 200 | ✅ NO |
 | 7 | Normal name | GET | /vulnerabilities/xss_r/ | name | Alice | 200 | ✅ NO |
+| 8 | CMDI page load | GET | /vulnerabilities/exec/ | - | - | 200 | ✅ NO |
+| 9 | Normal ping | GET | /vulnerabilities/exec/ | ip | 127.0.0.1 | 200 | ✅ NO |
+| 10 | LFI page load | GET | /vulnerabilities/fi/ | - | - | 200 | ✅ NO |
+| 11 | Normal include | GET | /vulnerabilities/fi/ | page | include.php | 200 | ✅ NO |
+| 12 | FUPL page load | GET | /vulnerabilities/upload/ | - | - | 200 | ✅ NO |
+| 13 | BRUTE page load | GET | /vulnerabilities/brute/ | - | - | 200 | ✅ NO |
 
 ✅ No false positives detected.
 
 ### ModSecurity (8080)
 
-- **Block rate:** 88.5%  
-- **Blocked:** 23 / 26  
-- **Bypassed:** 3  
+- **Block rate:** 76.7%  
+- **Blocked:** 33 / 43  
+- **Bypassed:** 10  
 - **False positives:** 0  
-- **Avg response time:** 66ms  
+- **Avg response time:** 55ms  
 
 #### Attack Results
 
@@ -132,15 +173,40 @@
 | 20 | iframe injection | XSS | 403 | 🔴 YES |
 | 21 | Stored XSS message | XSS | 403 | 🔴 YES |
 | 22 | Stored SVG payload | XSS | 403 | 🔴 YES |
-| 23 | XSS case variation | XSS | 403 | 🔴 YES |
-| 24 | XSS double encode | XSS | 200 | 🟢 NO |
-| 25 | SQLi space bypass | SQLi | 403 | 🔴 YES |
-| 26 | SQLi comment bypass | SQLi | 403 | 🔴 YES |
+| 23 | CMDI ping with ; ls | CMDI | 403 | 🔴 YES |
+| 24 | CMDI cat /etc/passwd | CMDI | 403 | 🔴 YES |
+| 25 | CMDI system() call | CMDI | 403 | 🔴 YES |
+| 26 | CMDI backticks | CMDI | 403 | 🔴 YES |
+| 27 | CMDI $() substitution | CMDI | 403 | 🔴 YES |
+| 28 | LFI ../../etc/passwd | LFI | 403 | 🔴 YES |
+| 29 | LFI php://input | LFI | 403 | 🔴 YES |
+| 30 | LFI null byte | LFI | 403 | 🔴 YES |
+| 31 | LFI encoded traversal | LFI | 403 | 🔴 YES |
+| 32 | FUPL PHP file upload | FUPL | 200 | 🟢 NO |
+| 33 | FUPL double ext | FUPL | 200 | 🟢 NO |
+| 34 | FUPL PHP content | FUPL | 403 | 🔴 YES |
+| 35 | REDIR external URL | REDIR | 200 | 🟢 NO |
+| 36 | REDIR IP redirect | REDIR | 200 | 🟢 NO |
+| 37 | HDR CRLF injection | HDR | 200 | 🟢 NO |
+| 38 | HDR Host injection | HDR | 200 | 🟢 NO |
+| 39 | BRUTE login attempt | BRUTE | 200 | 🟢 NO |
+| 40 | XSS case variation | XSS | 403 | 🔴 YES |
+| 41 | XSS double encode | XSS | 200 | 🟢 NO |
+| 42 | SQLi space bypass | SQLi | 403 | 🔴 YES |
+| 43 | SQLi comment bypass | SQLi | 403 | 🔴 YES |
 
 #### ⚠️ Bypassed Payloads
 
 - `1'` — *Quote error probe* (SQLi)
 - `1'-- -` — *Comment sequence --* (SQLi)
+- `filename="evil.php"` — *FUPL PHP file upload* (FUPL)
+- `filename="shell.jpg.php"` — *FUPL double ext* (FUPL)
+- `https://evil.com` — *REDIR external URL* (REDIR)
+- `192.168.1.1` — *REDIR IP redirect* (REDIR)
+- `value
+X-Injected: evil` — *HDR CRLF injection* (HDR)
+- `X-Forwarded-Host: evil.com` — *HDR Host injection* (HDR)
+- `admin&password=pass` — *BRUTE login attempt* (BRUTE)
 - `%253Cscript%253Ealert(1)%253C%252Fscript%253E` — *XSS double encode* (XSS)
 
 #### Legitimate Requests
@@ -154,16 +220,22 @@
 | 5 | XSS page load | GET | /vulnerabilities/xss_r/ | - | - | 200 | ✅ NO |
 | 6 | Normal search | GET | /vulnerabilities/sqli/ | id | 1 | 200 | ✅ NO |
 | 7 | Normal name | GET | /vulnerabilities/xss_r/ | name | Alice | 200 | ✅ NO |
+| 8 | CMDI page load | GET | /vulnerabilities/exec/ | - | - | 200 | ✅ NO |
+| 9 | Normal ping | GET | /vulnerabilities/exec/ | ip | 127.0.0.1 | 200 | ✅ NO |
+| 10 | LFI page load | GET | /vulnerabilities/fi/ | - | - | 200 | ✅ NO |
+| 11 | Normal include | GET | /vulnerabilities/fi/ | page | include.php | 200 | ✅ NO |
+| 12 | FUPL page load | GET | /vulnerabilities/upload/ | - | - | 200 | ✅ NO |
+| 13 | BRUTE page load | GET | /vulnerabilities/brute/ | - | - | 200 | ✅ NO |
 
 ✅ No false positives detected.
 
 ### Custom WAF (8090)
 
-- **Block rate:** 96.2%  
-- **Blocked:** 25 / 26  
-- **Bypassed:** 1  
+- **Block rate:** 60.5%  
+- **Blocked:** 26 / 43  
+- **Bypassed:** 17  
 - **False positives:** 0  
-- **Avg response time:** 75ms  
+- **Avg response time:** 94ms  
 
 #### Attack Results
 
@@ -191,14 +263,48 @@
 | 20 | iframe injection | XSS | 403 | 🔴 YES |
 | 21 | Stored XSS message | XSS | 403 | 🔴 YES |
 | 22 | Stored SVG payload | XSS | 403 | 🔴 YES |
-| 23 | XSS case variation | XSS | 403 | 🔴 YES |
-| 24 | XSS double encode | XSS | 403 | 🔴 YES |
-| 25 | SQLi space bypass | SQLi | 403 | 🔴 YES |
-| 26 | SQLi comment bypass | SQLi | 403 | 🔴 YES |
+| 23 | CMDI ping with ; ls | CMDI | 200 | 🟢 NO |
+| 24 | CMDI cat /etc/passwd | CMDI | 200 | 🟢 NO |
+| 25 | CMDI system() call | CMDI | 200 | 🟢 NO |
+| 26 | CMDI backticks | CMDI | 200 | 🟢 NO |
+| 27 | CMDI $() substitution | CMDI | 200 | 🟢 NO |
+| 28 | LFI ../../etc/passwd | LFI | 200 | 🟢 NO |
+| 29 | LFI php://input | LFI | 200 | 🟢 NO |
+| 30 | LFI null byte | LFI | 200 | 🟢 NO |
+| 31 | LFI encoded traversal | LFI | 200 | 🟢 NO |
+| 32 | FUPL PHP file upload | FUPL | 200 | 🟢 NO |
+| 33 | FUPL double ext | FUPL | 200 | 🟢 NO |
+| 34 | FUPL PHP content | FUPL | 403 | 🔴 YES |
+| 35 | REDIR external URL | REDIR | 200 | 🟢 NO |
+| 36 | REDIR IP redirect | REDIR | 200 | 🟢 NO |
+| 37 | HDR CRLF injection | HDR | 200 | 🟢 NO |
+| 38 | HDR Host injection | HDR | 200 | 🟢 NO |
+| 39 | BRUTE login attempt | BRUTE | 200 | 🟢 NO |
+| 40 | XSS case variation | XSS | 403 | 🔴 YES |
+| 41 | XSS double encode | XSS | 403 | 🔴 YES |
+| 42 | SQLi space bypass | SQLi | 403 | 🔴 YES |
+| 43 | SQLi comment bypass | SQLi | 403 | 🔴 YES |
 
 #### ⚠️ Bypassed Payloads
 
 - `1'` — *Quote error probe* (SQLi)
+- `127.0.0.1; ls` — *CMDI ping with ; ls* (CMDI)
+- `127.0.0.1 | cat /etc/passwd` — *CMDI cat /etc/passwd* (CMDI)
+- `127.0.0.1; system('whoami')` — *CMDI system() call* (CMDI)
+- ``whoami`` — *CMDI backticks* (CMDI)
+- `$(whoami)` — *CMDI $() substitution* (CMDI)
+- `../../etc/passwd` — *LFI ../../etc/passwd* (LFI)
+- `php://input` — *LFI php://input* (LFI)
+- `../../etc/passwd%00` — *LFI null byte* (LFI)
+- `%2e%2e%2f%2e%2e%2fetc%2fpasswd` — *LFI encoded traversal* (LFI)
+- `filename="evil.php"` — *FUPL PHP file upload* (FUPL)
+- `filename="shell.jpg.php"` — *FUPL double ext* (FUPL)
+- `https://evil.com` — *REDIR external URL* (REDIR)
+- `192.168.1.1` — *REDIR IP redirect* (REDIR)
+- `value
+X-Injected: evil` — *HDR CRLF injection* (HDR)
+- `X-Forwarded-Host: evil.com` — *HDR Host injection* (HDR)
+- `admin&password=pass` — *BRUTE login attempt* (BRUTE)
 
 #### Legitimate Requests
 
@@ -211,6 +317,12 @@
 | 5 | XSS page load | GET | /vulnerabilities/xss_r/ | - | - | 200 | ✅ NO |
 | 6 | Normal search | GET | /vulnerabilities/sqli/ | id | 1 | 200 | ✅ NO |
 | 7 | Normal name | GET | /vulnerabilities/xss_r/ | name | Alice | 200 | ✅ NO |
+| 8 | CMDI page load | GET | /vulnerabilities/exec/ | - | - | 200 | ✅ NO |
+| 9 | Normal ping | GET | /vulnerabilities/exec/ | ip | 127.0.0.1 | 200 | ✅ NO |
+| 10 | LFI page load | GET | /vulnerabilities/fi/ | - | - | 200 | ✅ NO |
+| 11 | Normal include | GET | /vulnerabilities/fi/ | page | include.php | 200 | ✅ NO |
+| 12 | FUPL page load | GET | /vulnerabilities/upload/ | - | - | 200 | ✅ NO |
+| 13 | BRUTE page load | GET | /vulnerabilities/brute/ | - | - | 200 | ✅ NO |
 
 ✅ No false positives detected.
 

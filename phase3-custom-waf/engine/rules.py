@@ -1,20 +1,9 @@
-﻿# ─────────────────────────────────────────────────────────────
-#  Custom WAF — Detection Rules (Regex Signatures)
-#  Covers SQLi and XSS payloads across URI, headers, and body.
-# ─────────────────────────────────────────────────────────────
-
-import re
-
-# Each rule is a dict:
-#   id       → unique rule identifier
-#   name     → human-readable label (written to log)
-#   category → "sqli" | "xss"
-#   pattern  → compiled regex
-#   flags    → re flags used
+﻿import re
 
 RULES = [
-    # ── SQL Injection ─────────────────────────────────────────
-
+    # ═══════════════════════════════════════════════════════════
+    # 1. SQL INJECTION (6 règles)
+    # ═══════════════════════════════════════════════════════════
     {
         "id": "SQLI-001",
         "name": "UNION SELECT statement",
@@ -41,7 +30,7 @@ RULES = [
     },
     {
         "id": "SQLI-005",
-        "name": "Common SQL keywords",
+        "name": "Dangerous SQL keywords",
         "category": "sqli",
         "pattern": re.compile(
             r"\b(DROP\s+TABLE|INSERT\s+INTO|DELETE\s+FROM|UPDATE\s+\w+\s+SET|EXEC\s*\(|EXECUTE\s*\(|xp_cmdshell)\b",
@@ -55,8 +44,9 @@ RULES = [
         "pattern": re.compile(r"'\s*(;|--|OR|AND|UNION)", re.IGNORECASE),
     },
 
-    # ── Cross-Site Scripting ──────────────────────────────────
-
+    # ═══════════════════════════════════════════════════════════
+    # 2. CROSS-SITE SCRIPTING (6 règles)
+    # ═══════════════════════════════════════════════════════════
     {
         "id": "XSS-001",
         "name": "Script tag",
@@ -65,7 +55,7 @@ RULES = [
     },
     {
         "id": "XSS-002",
-        "name": "Event handler attributes (onerror, onload, etc.)",
+        "name": "Event handler attributes",
         "category": "xss",
         "pattern": re.compile(r"\bon\w+\s*=", re.IGNORECASE),
     },
@@ -77,7 +67,7 @@ RULES = [
     },
     {
         "id": "XSS-004",
-        "name": "SVG/IMG injection vectors",
+        "name": "SVG/IMG/IFRAME injection vectors",
         "category": "xss",
         "pattern": re.compile(r"<\s*(svg|img|iframe|object|embed)[\s>]", re.IGNORECASE),
     },
@@ -93,14 +83,131 @@ RULES = [
         "category": "xss",
         "pattern": re.compile(r"&#x?[0-9a-f]+;", re.IGNORECASE),
     },
+
+    # ═══════════════════════════════════════════════════════════
+    # 3. COMMAND INJECTION — 4 règles (CORRIGÉ : plus de FP)
+    # ═══════════════════════════════════════════════════════════
+    {
+        "id": "CMDI-001",
+        "name": "Command separator with shell command",
+        "category": "cmdi",
+        # Ne matche que si un séparateur est suivi d'une commande shell
+        "pattern": re.compile(r"[;&|`]\s*(?:ls|cat|whoami|id|pwd|echo|ping|nc|wget|curl|bash|sh|cmd|powershell|python|perl|ruby|uname|ifconfig|ipconfig|netstat|ps|kill|rm|mv|cp|chmod|chown)\b", re.IGNORECASE),
+    },
+    {
+        "id": "CMDI-002",
+        "name": "Command substitution $() or backticks",
+        "category": "cmdi",
+        "pattern": re.compile(r"\$\s*\(|`[^`]+`", re.IGNORECASE),
+    },
+    {
+        "id": "CMDI-003",
+        "name": "Shell execution functions",
+        "category": "cmdi",
+        "pattern": re.compile(r"\b(system|exec|shell_exec|passthru|popen|proc_open|eval)\s*\(", re.IGNORECASE),
+    },
+    {
+        "id": "CMDI-004",
+        "name": "Dangerous system commands",
+        "category": "cmdi",
+        "pattern": re.compile(r"\b(cat\s+/etc|ls\s+-|whoami|id\s*;|ping\s+-c|nc\s+-|wget\s+|curl\s+|uname\s+-)\b", re.IGNORECASE),
+    },
+
+    # ═══════════════════════════════════════════════════════════
+    # 4. FILE INCLUSION / PATH TRAVERSAL (DVWA File Inclusion) — 4 règles
+    # ═══════════════════════════════════════════════════════════
+    {
+        "id": "LFI-001",
+        "name": "Path traversal sequences",
+        "category": "lfi",
+        "pattern": re.compile(r"(\.\./|\.\.\\|%2e%2e%2f|%252e%252e%252f)", re.IGNORECASE),
+    },
+    {
+        "id": "LFI-002",
+        "name": "PHP wrappers (file://, php://, data://, expect://)",
+        "category": "lfi",
+        "pattern": re.compile(r"(file|php|data|expect|zip|phar)://", re.IGNORECASE),
+    },
+    {
+        "id": "LFI-003",
+        "name": "Sensitive file access",
+        "category": "lfi",
+        "pattern": re.compile(r"(/etc/passwd|/etc/shadow|/proc/self|win\.ini|boot\.ini|system32)", re.IGNORECASE),
+    },
+    {
+        "id": "LFI-004",
+        "name": "Null byte injection",
+        "category": "lfi",
+        "pattern": re.compile(r"%00|\\x00", re.IGNORECASE),
+    },
+
+    # ═══════════════════════════════════════════════════════════
+    # 5. FILE UPLOAD (DVWA File Upload) — 3 règles
+    # ═══════════════════════════════════════════════════════════
+    {
+        "id": "FUPL-001",
+        "name": "Dangerous file extension in upload",
+        "category": "upload",
+        "pattern": re.compile(r"filename=\"[^\"]*\.(php|php3|php4|php5|phtml|jsp|asp|aspx|exe|sh|py)\"", re.IGNORECASE),
+    },
+    {
+        "id": "FUPL-002",
+        "name": "PHP opening tag in content",
+        "category": "upload",
+        "pattern": re.compile(r"<\?php|<\?=|<script\s+language\s*=\s*[\"']?php[\"']?", re.IGNORECASE),
+    },
+    {
+        "id": "FUPL-003",
+        "name": "Double extension bypass",
+        "category": "upload",
+        "pattern": re.compile(r"\.(jpg|jpeg|png|gif|pdf)\.(php|jsp|asp)", re.IGNORECASE),
+    },
+
+    # ═══════════════════════════════════════════════════════════
+    # 6. OPEN REDIRECT — 2 règles
+    # ═══════════════════════════════════════════════════════════
+    {
+        "id": "REDIR-001",
+        "name": "Open redirect parameter with external URL",
+        "category": "redirect",
+        "pattern": re.compile(r"(redirect|url|next|return|goto|redir)\s*=\s*(https?://|//)", re.IGNORECASE),
+    },
+    {
+        "id": "REDIR-002",
+        "name": "Redirect to IP address",
+        "category": "redirect",
+        "pattern": re.compile(r"(redirect|url|next|return)\s*=\s*\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", re.IGNORECASE),
+    },
+
+    # ═══════════════════════════════════════════════════════════
+    # 7. HEADER INJECTION — 2 règles
+    # ═══════════════════════════════════════════════════════════
+    {
+        "id": "HDR-001",
+        "name": "CRLF injection in headers",
+        "category": "header_injection",
+        "pattern": re.compile(r"[\r\n]\s*\w+:", re.IGNORECASE),
+    },
+    {
+        "id": "HDR-002",
+        "name": "Host header injection",
+        "category": "header_injection",
+        "pattern": re.compile(r"X-Forwarded-Host\s*:\s*[^\s]+", re.IGNORECASE),
+    },
+
+    # ═══════════════════════════════════════════════════════════
+    # 8. BRUTE FORCE (détection pattern — complété par rate limiter)
+    # ═══════════════════════════════════════════════════════════
+    {
+        "id": "BRUTE-001",
+        "name": "Multiple login attempts pattern",
+        "category": "brute_force",
+        "pattern": re.compile(r"(username|user|login).{0,20}(password|pass|pwd)", re.IGNORECASE),
+    },
 ]
 
 
 def inspect(value: str) -> dict | None:
-    """
-    Run all rules against a string value.
-    Returns the first matching rule dict, or None if clean.
-    """
     for rule in RULES:
         if rule["pattern"].search(value):
             return rule
